@@ -55,6 +55,13 @@ jobs:
         if: steps.check.outputs.build == 'true'
         uses: docker/setup-buildx-action@v3
 
+      - name: Lowercase image name parts
+        if: steps.check.outputs.build == 'true'
+        id: image
+        run: |
+          echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "repo=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
       - name: Build & push ${{ matrix.service }}
         if: steps.check.outputs.build == 'true'
         uses: docker/build-push-action@v5
@@ -62,8 +69,8 @@ jobs:
           context: ./${{ matrix.service }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.repository.name }}-${{ matrix.service }}:latest
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.repository.name }}-${{ matrix.service }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.owner }}/${{ steps.image.outputs.repo }}-${{ matrix.service }}:latest
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.owner }}/${{ steps.image.outputs.repo }}-${{ matrix.service }}:${{ github.sha }}
           provenance: false
           sbom: false
 
@@ -88,6 +95,9 @@ jobs:
           TARGET_BRANCH: ${{ env.TARGET_BRANCH }}
         run: |
           set -euo pipefail
+
+          OWNER="$(echo "${OWNER}" | tr '[:upper:]' '[:lower:]')"
+          APP_REPO="$(echo "${APP_REPO}" | tr '[:upper:]' '[:lower:]')"
 
           # ---- Git identity & credentials
           git config --global user.name  "GitHub Actions"
