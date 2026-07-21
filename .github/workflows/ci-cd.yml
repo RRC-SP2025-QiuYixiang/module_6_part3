@@ -103,7 +103,7 @@ jobs:
           git config --global user.name  "GitHub Actions"
           git config --global user.email "actions@github.com"
           git config --global credential.helper store
-          printf "https://%s:x-oauth-basic@github.com\n" "$GIT_TOKEN" > ~/.git-credentials
+          printf "https://x-access-token:%s@github.com\n" "$GIT_TOKEN" > ~/.git-credentials
 
           # ---- Clone or init GitOps repo
           workdir="$(mktemp -d)"
@@ -176,6 +176,6 @@ jobs:
           fi
 
           git remote remove origin >/dev/null 2>&1 || true
-          git remote add origin "https://${GIT_TOKEN}@github.com/${GITOPS_REPO}.git"
+          git remote add origin "https://x-access-token:${GIT_TOKEN}@github.com/${GITOPS_REPO}.git"
           git push -u origin "${TARGET_BRANCH}"
 
